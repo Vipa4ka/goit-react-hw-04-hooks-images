@@ -1,23 +1,22 @@
-import React, { Component } from "react";
+import { useEffect } from "react";
 import PropTypes from "prop-types";
 
-class Button extends Component {
-  componentDidMount() {
+export default function Button({ onFetchHits }) {
+  useEffect(() => {
     window.scrollTo({
       top: document.documentElement.scrollHeight,
       behavior: "smooth",
     });
-  }
-  render() {
-    return (
-      <button type="button" className="Button" onClick={this.props.onFetchHits}>
-        Load more
-      </button>
-    );
-  }
+  }, []);
+
+  return (
+    <button type="button" className="Button" onClick={onFetchHits}>
+      Load more
+    </button>
+  );
 }
+
 Button.propTypes = {
   onFetchHits: PropTypes.func.isRequired,
+  onClick: PropTypes.func,
 };
-
-export default Button;

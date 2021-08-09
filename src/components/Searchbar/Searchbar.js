@@ -1,48 +1,42 @@
-import React, { Component } from "react";
+import { useState } from "react";
 
-class Searchbar extends Component {
-  state = {
-    search: "",
+export default function App({ onSubmit }) {
+  const [search, setSearch] = useState("");
+
+  const handleChange = (e) => {
+    setSearch(e.currentTarget.value.toLowerCase());
   };
 
-  handleChange = (e) => {
-    this.setState({ search: e.currentTarget.value.toLowerCase() });
-  };
-
-  handleSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (this.state.search.trim() === "") {
+    if (search.trim === "") {
       return;
     }
-    this.props.onSubmit(this.state.search);
-    this.reset();
+    onSubmit(search);
+    reset();
   };
 
-  reset = () => {
-    this.setState({ search: "" });
+  const reset = () => {
+    setSearch("");
   };
 
-  render() {
-    return (
-      <header className="Searchbar">
-        <form onSubmit={this.handleSubmit} className="SearchForm">
-          <button type="submit" className="SearchForm-button">
-            <span className="SearchForm-button-label">Search</span>
-          </button>
+  return (
+    <header className="Searchbar">
+      <form onSubmit={handleSubmit} className="SearchForm">
+        <button type="submit" className="SearchForm-button">
+          <span className="SearchForm-button-label">Search</span>
+        </button>
 
-          <input
-            value={this.state.search}
-            className="SearchForm-input"
-            type="text"
-            autoComplete="off"
-            autoFocus
-            placeholder="Search images and photos"
-            onChange={this.handleChange}
-          />
-        </form>
-      </header>
-    );
-  }
+        <input
+          value={search}
+          className="SearchForm-input"
+          type="text"
+          autoComplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+          onChange={handleChange}
+        />
+      </form>
+    </header>
+  );
 }
-
-export default Searchbar;

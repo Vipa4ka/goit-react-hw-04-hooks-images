@@ -1,5 +1,4 @@
-import React, { Component } from "react";
-
+import { useState, useEffect } from "react";
 import imagesApi from "./service/news-api";
 import Searchbar from "./components/Searchbar";
 import ImageGallery from "./components/ImageGallery";
@@ -7,109 +6,84 @@ import LoaderGallery from "./components/Loader";
 import Button from "./components/Button";
 import Modal from "./components/Modal";
 
-class App extends Component {
-  state = {
-    hits: [],
-    search: "",
-    loading: false,
-    error: null,
-    currentPage: 1,
-    currentPageHits: [],
-    showModal: false,
-    url: "",
-    tag: "",
-  };
+export default function App() {
+  const [hits, setHits] = useState([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPageHits, setCurrentPageHits] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [url, setUrl] = useState("");
+  const [tag, setTag] = useState("");
 
-  componentDidMount() {}
+  const renderLoadMore = !(currentPageHits.length < 12) && !loading;
 
-  componentDidUpdate(prevProps, prevState) {
-    const prevName = prevState.search;
-    const nextName = this.state.search;
-    if (prevName !== nextName) {
-      this.fetchHits();
+  useEffect(() => {
+    if (search === "") {
+      return;
     }
-  }
+    fetchHits();
+  }, [search]);
 
-  addSearch = (search) => {
-    this.setState({
-      search: search,
-      currentPage: 1,
-      hits: [],
-      error: null,
-      url: "",
-      tag: "",
-    });
-  };
-
-  fetchHits = () => {
-    const { search, currentPage } = this.state;
+  const fetchHits = () => {
+    setLoading(true);
     const options = { search, currentPage };
 
-    this.setState({ loading: true });
-
     imagesApi
-      .fetchHits(options)
+      .findFetchHits(options)
       .then((hits) => {
-        this.setState((prevState) => ({
-          hits: [...prevState.hits, ...hits],
-          currentPage: prevState.currentPage + 1,
-          currentPageHits: [...hits],
-        }));
+        setHits((prevHits) => [...prevHits, ...hits]);
+        setCurrentPage((prevCurrentPage) => prevCurrentPage + 1);
+        setCurrentPageHits([...hits]);
 
         if (hits.length === 0) {
-          this.setState({
-            error: `No data on your request "${search}"`,
-          });
+          setError(`No data on your request "${search}"`);
         }
       })
-
-      .catch((error) => this.setState({ error: error.message }))
-      .finally(() => this.setState({ loading: false }));
+      .catch((error) => setError(error.message))
+      .finally(() => setLoading(false));
   };
 
-  toggleModal = () => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-    }));
+  const addSearch = (search) => {
+    setSearch(search);
+    setCurrentPage(1);
+    setHits([]);
+    setError(null);
+    setUrl("");
+    setTag("");
   };
 
-  bigImage = ({ target }) => {
+  const toggleModal = () => {
+    setShowModal(!showModal);
+  };
+
+  const bigImage = ({ target }) => {
     if (target.nodeName !== "IMG") {
       return;
     }
-    const { url } = target.dataset;
-    const tag = target.alt;
-    this.setState({
-      url,
-      tag,
-      loading: false,
-    });
-    this.toggleModal();
+    setUrl(target.dataset);
+    setTag(target.alt);
+    setLoading(false);
+    toggleModal(false);
   };
 
-  render() {
-    const { error, loading, hits, currentPageHits, showModal, url, tag } =
-      this.state;
-    const renderLoadMore = !(currentPageHits.length < 12) && !loading;
-    return (
-      <>
-        <Searchbar onSubmit={this.addSearch} />
-        {error && <p style={{ textAlign: "center", color: "red" }}>{error}</p>}
+  return (
+    <>
+      <Searchbar onSubmit={addSearch} />
+      {error && <p style={{ textAlign: "center", color: "red" }}>{error}</p>}
 
-        <ImageGallery hits={hits} onClick={this.bigImage} />
+      <ImageGallery hits={hits} onClick={bigImage} />
 
-        {loading && <LoaderGallery />}
+      {loading && <LoaderGallery />}
 
-        {renderLoadMore && <Button onFetchHits={this.fetchHits} />}
+      {renderLoadMore && <Button onFetchHits={fetchHits} />}
 
-        {showModal && (
-          <Modal onClose={this.toggleModal} onClick={this.bigImage}>
-            <img src={url} alt={tag} />
-          </Modal>
-        )}
-      </>
-    );
-  }
+      {showModal && (
+        <Modal onClose={toggleModal} onClick={bigImage}>
+          <img src={url} alt={tag} />
+        </Modal>
+      )}
+    </>
+  );
 }
-
-export default App;

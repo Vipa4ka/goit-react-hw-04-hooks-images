@@ -62,8 +62,10 @@ export default function App() {
     if (target.nodeName !== "IMG") {
       return;
     }
-    setUrl(target.dataset);
-    setTag(target.alt);
+    const { url } = target.dataset;
+    const tag = target.alt;
+    setUrl(url);
+    setTag(tag);
     setLoading(false);
     toggleModal(false);
   };

@@ -24,6 +24,7 @@ export default function App() {
       return;
     }
     fetchHits();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
   const fetchHits = () => {
